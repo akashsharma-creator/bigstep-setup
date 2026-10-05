@@ -28,12 +28,35 @@ $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
 
 if (-not $isAdmin) {
     Write-Host 'Not running as Administrator - relaunching elevated...' -ForegroundColor Yellow
-    if ($PSCommandPath) {
-        $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
-    } else {
-        $argList = "-NoProfile -ExecutionPolicy Bypass -Command `"irm '$RawUrl' | iex`""
+    $scriptFile = $PSCommandPath
+    if (-not $scriptFile) {
+        # Started via "irm | iex": save the script to a file and relaunch that.
+        # (Putting "irm ... | iex" on an elevated command line gets blocked by
+        #  Microsoft Defender as Trojan:Win32/Commando.A!ml - a false positive.)
+        $scriptFile = Join-Path $env:TEMP 'bigstep-setup.ps1'
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $RawUrl -OutFile $scriptFile -UseBasicParsing -ErrorAction Stop
+        } catch {
+            Write-Host "Could not download the setup script: $_" -ForegroundColor Red
+            return
+        }
     }
-    Start-Process powershell.exe -Verb RunAs -ArgumentList $argList
+    try {
+        Start-Process powershell.exe -Verb RunAs -ErrorAction Stop `
+            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptFile`""
+    } catch {
+        Write-Host "`nCould not get Administrator rights: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host @"
+
+Try this instead:
+  1. Click Start, type PowerShell, RIGHT-click 'Windows PowerShell' > 'Run as administrator'.
+  2. Paste the same command again and press Enter.
+
+If it still fails, antivirus may be blocking it - open Windows Security >
+Virus & threat protection > Protection history, or contact IT.
+"@ -ForegroundColor Yellow
+    }
     return
 }
 
