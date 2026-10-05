@@ -184,19 +184,36 @@ if (-not $winget) {
 }
 if ($winget) {
     Write-Host "Using winget: $winget" -ForegroundColor Green
+    # Refresh the package catalog so "latest" really means the newest release
+    Write-Host 'Updating winget catalog...'
+    & $winget source update --name winget --disable-interactivity | Out-Null
 } else {
     Write-Host 'winget unavailable - will use bundled installers only.' -ForegroundColor Yellow
 }
 
-# winget exit codes that mean "already installed / nothing to do"
-$wingetOk = @(0, -1978335189, -1978335135)
+# winget exit codes that mean "already on the latest version / nothing to do"
+$WINGET_NO_UPGRADE        = -1978335189   # no newer version available
+$WINGET_ALREADY_INSTALLED = -1978335135   # older winget: installed, didn't upgrade
+$wingetOk = @(0, $WINGET_NO_UPGRADE)
 
 function Install-WithWinget($app) {
     if (-not $winget -or -not $app.wingetId) { return $false }
-    Write-Host "  winget install $($app.wingetId)"
-    # --source winget skips the slow Microsoft Store source
-    & $winget install --id $app.wingetId -e --source winget --silent --accept-source-agreements --accept-package-agreements --disable-interactivity | Out-Host
-    return ($wingetOk -contains $LASTEXITCODE)
+    $common = @('--id', $app.wingetId, '-e', '--source', 'winget', '--silent',
+                '--accept-source-agreements', '--accept-package-agreements', '--disable-interactivity')
+    # --source winget skips the slow Microsoft Store source.
+    # If the app is already installed, current winget upgrades it to the latest version.
+    Write-Host "  winget install $($app.wingetId) (latest)"
+    & $winget install @common | Out-Host
+    $code = $LASTEXITCODE
+
+    if ($code -eq $WINGET_ALREADY_INSTALLED) {
+        # Older winget doesn't upgrade on install - do it explicitly
+        Write-Host '  Already installed - upgrading to the latest version...'
+        & $winget upgrade @common | Out-Host
+        $code = $LASTEXITCODE
+    }
+    if ($code -eq $WINGET_NO_UPGRADE) { Write-Host '  Already on the latest version.' -ForegroundColor Green }
+    return ($wingetOk -contains $code)
 }
 
 function Install-WithBundled($app) {

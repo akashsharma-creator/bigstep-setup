@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bigstep PC Setup</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6677;
+    --border: #dfe3ea; --accent: #2563eb; --accent-text: #ffffff;
+    --code-bg: #0f172a; --code-text: #e2e8f0; --ok: #15803d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --card: #161b22; --text: #e6edf3; --muted: #9aa4b2;
+      --border: #30363d; --accent: #3b82f6; --code-bg: #010409; --code-text: #e6edf3; --ok: #3fb950;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { margin: 0 0 4px; font-size: 28px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tab { border: 1px solid var(--border); background: var(--card); color: var(--text);
+         padding: 8px 16px; border-radius: 999px; cursor: pointer; font: inherit; }
+  .tab[aria-selected="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .detected { display: inline-block; font-size: 14px; color: var(--ok); margin-bottom: 12px; }
+  h2 { margin: 0 0 12px; font-size: 21px; }
+  ol { padding-left: 22px; margin: 0; }
+  li { margin: 10px 0; }
+  kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px;
+        padding: 0 5px; font: 13px ui-monospace, Consolas, monospace; background: var(--bg); }
+  .cmd { position: relative; margin: 10px 0; }
+  .cmd pre { margin: 0; background: var(--code-bg); color: var(--code-text); border-radius: 8px;
+             padding: 14px 92px 14px 14px; overflow-x: auto; font: 14px/1.5 ui-monospace, Consolas, monospace;
+             white-space: pre-wrap; word-break: break-all; }
+  .copy { position: absolute; top: 8px; right: 8px; background: var(--accent); color: var(--accent-text);
+          border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; font: 600 14px system-ui, sans-serif; }
+  .note { color: var(--muted); font-size: 14px; margin-top: 18px; }
+  [hidden] { display: none !important; }
+  footer { color: var(--muted); font-size: 13px; margin-top: 24px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bigstep PC Setup</h1>
+  <p class="sub">Installs the standard Bigstep software — always the latest versions. You choose which apps before anything is installed.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-os="windows">Windows</button>
+    <button class="tab" role="tab" data-os="mac">Mac</button>
+    <button class="tab" role="tab" data-os="linux">Linux</button>
+  </div>
+
+  <section class="card" data-panel="windows" hidden>
+    <span class="detected" hidden>✓ Detected: this is a Windows PC</span>
+    <h2>Windows 10 / 11</h2>
+    <ol>
+      <li>Click <b>Start</b>, type <b>PowerShell</b> and open <b>Windows PowerShell</b>.</li>
+      <li>Click <b>Copy</b>, then right-click inside the PowerShell window to paste, and press <kbd>Enter</kbd>:
+        <div class="cmd"><pre>irm https://raw.githubusercontent.com/akashsharma-creator/bigstep-setup/main/windows/setup.ps1 | iex</pre><button class="copy">Copy</button></div>
+      </li>
+      <li>Click <b>Yes</b> on the <i>“allow this app to make changes”</i> prompt.</li>
+      <li>In the <b>choose software</b> window, tick the apps you want and click <b>Install</b>.</li>
+      <li>Wait for the <b>SUMMARY</b> table (10–30 min), press <kbd>Enter</kbd>, then restart the PC.</li>
+    </ol>
+    <p class="note">Apps that are already installed are upgraded to the latest version. A log is saved in <code>C:\BigstepSetup\</code>.</p>
+  </section>
+
+  <section class="card" data-panel="mac" hidden>
+    <span class="detected" hidden>✓ Detected: this is a Mac</span>
+    <h2>macOS</h2>
+    <ol>
+      <li>Press <kbd>⌘ Cmd</kbd> + <kbd>Space</kbd>, type <b>Terminal</b> and press <kbd>Enter</kbd>.</li>
+      <li>Click <b>Copy</b>, paste into Terminal with <kbd>⌘ Cmd</kbd> + <kbd>V</kbd>, and press <kbd>Enter</kbd>:
+        <div class="cmd"><pre>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/akashsharma-creator/bigstep-setup/main/macos/setup.sh)"</pre><button class="copy">Copy</button></div>
+      </li>
+      <li>In the <b>Bigstep Mac Setup</b> window, select the apps you want (<kbd>⌘ Cmd</kbd>-click to pick several) and click <b>Install</b>.</li>
+      <li>Type your <b>Mac login password</b> when asked (nothing appears while you type — that's normal) and press <kbd>Enter</kbd>.</li>
+      <li>Wait for the <b>SUMMARY</b>, then restart the Mac.</li>
+    </ol>
+    <p class="note">The first run also installs Homebrew, which can take an extra 5–10 minutes. Apps that are already installed are upgraded to the latest version. A log is saved in <code>~/BigstepSetup/</code>.</p>
+  </section>
+
+  <section class="card" data-panel="linux" hidden>
+    <span class="detected" hidden>✓ Detected: this is a Linux PC</span>
+    <h2>Linux</h2>
+    <p>Linux setup isn't available yet. Please contact IT.</p>
+  </section>
+
+  <section class="card" data-panel="phone" hidden>
+    <h2>Open this page on the computer you're setting up</h2>
+    <p>This setup runs on Windows PCs and Macs, not phones or tablets. Open this same link on the new computer, or pick its system above to see the steps.</p>
+  </section>
+
+  <footer>
+    Source &amp; full guide: <a href="https://github.com/akashsharma-creator/bigstep-setup">github.com/akashsharma-creator/bigstep-setup</a>
+  </footer>
+</main>
+
+<script>
+  function detectOS() {
+    var ua = navigator.userAgent || '';
+    var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+    if (/Android|iPhone|iPad|iPod/i.test(ua) || (/Mac/i.test(platform) && navigator.maxTouchPoints > 1)) return 'phone';
+    if (/Win/i.test(platform) || /Windows/i.test(ua)) return 'windows';
+    if (/Mac/i.test(platform) || /Macintosh/i.test(ua)) return 'mac';
+    if (/Linux|X11|CrOS/i.test(platform + ' ' + ua)) return 'linux';
+    return 'windows';
+  }
+
+  function show(os, detected) {
+    document.querySelectorAll('[data-panel]').forEach(function (p) {
+      p.hidden = p.dataset.panel !== os;
+      var d = p.querySelector('.detected');
+      if (d) d.hidden = !detected;
+    });
+    document.querySelectorAll('.tab').forEach(function (t) {
+      t.setAttribute('aria-selected', t.dataset.os === os ? 'true' : 'false');
+    });
+  }
+
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { show(t.dataset.os, t.dataset.os === detectOS()); });
+  });
+
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.previousElementSibling.textContent;
+      var done = function () { btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = 'Copy'; }, 2000); };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done);
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        ta.remove();
+      }
+    });
+  });
+
+  show(detectOS(), true);
+</script>
+</body>
+</html>

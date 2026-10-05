@@ -1,0 +1,14 @@
+# Bigstep Mac apps - one app per line:
+#   Name | ticked by default (1 = yes, 0 = no) | cask or formula | Homebrew name
+# Find a Homebrew name with:  brew search "app name"   (or https://formulae.brew.sh)
+Microsoft 365 (Office) | 1 | cask    | microsoft-office
+Google Chrome          | 1 | cask    | google-chrome
+Mozilla Firefox        | 1 | cask    | firefox
+Opera                  | 1 | cask    | opera
+AnyDesk                | 1 | cask    | anydesk
+Adobe Acrobat Reader   | 1 | cask    | adobe-acrobat-reader
+7-Zip                  | 0 | formula | sevenzip
+VLC                    | 0 | cask    | vlc
+Zoom                   | 0 | cask    | zoom
+Slack                  | 0 | cask    | slack
+VS Code                | 0 | cask    | visual-studio-code

@@ -1,12 +1,20 @@
 # Bigstep New PC Setup
 
 Set up a new work computer with **one command**. The command downloads this
-repository and installs all the standard Bigstep software automatically.
+repository and installs the standard Bigstep software, **always the latest
+version**. Apps that are already installed get upgraded.
+
+## 👉 One link for every computer
+
+**https://akashsharma-creator.github.io/bigstep-setup/**
+
+Open this link on the new computer. It detects whether it's Windows or a Mac
+and shows the right command, with a **Copy** button and step-by-step instructions.
 
 | Operating system | Status         | Go to                         |
 |------------------|----------------|-------------------------------|
 | Windows 10 / 11  | ✅ Ready        | [Windows](#windows)           |
-| macOS            | 🚧 Coming soon  | [macOS](#macos-coming-soon)   |
+| macOS            | ✅ Ready        | [macOS](#macos)               |
 | Linux (Ubuntu)   | 🚧 Coming soon  | [Linux](#linux-coming-soon)   |
 
 ---
@@ -87,7 +95,7 @@ You can change this list each time in the selection window (see step 5 below).
 
 | Problem | Fix |
 |---|---|
-| An app shows **FAILED** in the summary | Run the same command again. Apps that are already installed are skipped, so only the missing ones are retried. |
+| An app shows **FAILED** in the summary | Run the same command again. Apps that are already installed are just checked for updates, so it's safe to re-run. |
 | `irm` / "could not be resolved" / download error | Check the internet connection, or use [Method 2](#method-2--from-a-pendrive-no-internet--slow-internet). |
 | "running scripts is disabled on this system" | Use the one-line command from Method 1 exactly as written, or double-click `install.bat`. Both get around this setting. |
 | Nothing happens after clicking **Yes** | Look for the second PowerShell window on the taskbar. |
@@ -105,7 +113,7 @@ All Windows apps are listed in [`windows/apps.json`](windows/apps.json). Each ap
 |-------------|---------------|
 | `name`      | Name shown during installation. |
 | `enabled`   | `true` = ticked by default in the selection window, `false` = shown but unticked. |
-| `wingetId`  | ID used by **winget** (Windows' built-in installer) to download the latest version. To find an ID, run `winget search <app name>` on any Windows PC. |
+| `wingetId`  | ID used by **winget** (Windows' built-in installer) to download the latest version. If the app is already installed, winget upgrades it to the latest version. To find an ID, run `winget search <app name>` on any Windows PC. |
 | `installer` | *(optional)* An installer file in `windows/installers/`, used if winget isn't available or fails. |
 | `args`      | *(optional)* Silent-install options for that installer file. |
 | `background`| *(optional)* `true` = start this installer and carry on with the other apps without waiting. Use it for large, slow installers (Microsoft 365 uses it). |
@@ -120,15 +128,63 @@ All Windows apps are listed in [`windows/apps.json`](windows/apps.json). Each ap
 
 ---
 
-## macOS (coming soon)
+## macOS
 
-This will work the same way: one command in **Terminal**, using `macos/setup.sh`
-and `macos/apps` (installed through Homebrew).
+Everything is installed through **Homebrew** (the standard Mac package
+manager), which always downloads the latest version. The script installs
+Homebrew automatically if the Mac doesn't have it yet.
 
-```bash
-# Not available yet
-curl -fsSL https://raw.githubusercontent.com/akashsharma-creator/bigstep-setup/main/macos/setup.sh | bash
+### What gets installed
+
+| Software               | Ticked by default |
+|------------------------|:--------------------:|
+| Microsoft 365 (Office) | ✅ |
+| Google Chrome          | ✅ |
+| Mozilla Firefox        | ✅ |
+| Opera                  | ✅ |
+| AnyDesk                | ✅ |
+| Adobe Acrobat Reader   | ✅ |
+| 7-Zip, VLC, Zoom, Slack, VS Code | ❌ (optional) |
+
+WinMemoryCleaner, ScanCircle4D and Notepad++ are Windows-only, so they aren't on this list.
+
+### Before you start
+
+- The Mac must be connected to the **internet**.
+- You must know the **Mac login password**, and the user must be an **Administrator** on the Mac.
+- Allow **20–45 minutes**. On a new Mac, Homebrew and Apple's developer tools are installed first.
+
+### Steps
+
+1. Press **⌘ Cmd + Space**, type **Terminal**, and press **Enter**.
+2. Paste this command and press **Enter**:
+
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/akashsharma-creator/bigstep-setup/main/macos/setup.sh)"
+   ```
+
+3. A **Bigstep Mac Setup** window lists every app, with the standard ones already
+   selected. **⌘ Cmd-click** to add or remove apps, then click **Install**.
+   (If the window can't open, a numbered text list appears in Terminal instead,
+   which works the same way as on Windows.)
+4. When asked, type the **Mac login password** and press **Enter**. Nothing
+   appears while you type, which is normal.
+5. Wait for the **SUMMARY**, then restart the Mac.
+6. Open Word or Outlook and **sign in with your company account** to activate Microsoft 365.
+
+A log of each run is saved in `~/BigstepSetup/`.
+
+### Adding or removing Mac software
+
+Edit [`macos/apps.txt`](macos/apps.txt). Each line is:
+
 ```
+Name | ticked by default (1/0) | cask or formula | Homebrew name
+VLC  | 0                       | cask            | vlc
+```
+
+Find the Homebrew name with `brew search "app name"` or on https://formulae.brew.sh.
+Desktop apps are usually a `cask`, and command-line tools a `formula`.
 
 ## Linux (coming soon)
 
@@ -147,12 +203,16 @@ curl -fsSL https://raw.githubusercontent.com/akashsharma-creator/bigstep-setup/m
 ```
 bigstep-setup/
 ├── README.md          ← this guide
+├── docs/
+│   └── index.html     ← the "one link" page (detects Windows / Mac)
 ├── windows/
 │   ├── setup.ps1      ← main Windows setup script
 │   ├── install.bat    ← double-click launcher (pendrive use)
 │   ├── apps.json      ← list of Windows apps to install
 │   └── installers/    ← offline / fallback installer files
-├── macos/             ← (coming soon)
+├── macos/
+│   ├── setup.sh       ← main Mac setup script (Homebrew)
+│   └── apps.txt       ← list of Mac apps to install
 └── linux/             ← (coming soon)
 ```
 
