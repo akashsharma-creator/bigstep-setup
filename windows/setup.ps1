@@ -70,6 +70,103 @@ function Get-InstallerFile($name) {
     return $null
 }
 
+# ---- 2b. Let the user choose which apps to install ---------------------
+#      Apps with "enabled": true in apps.json are ticked by default.
+function Select-AppsWindow($apps) {
+    Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+    [Windows.Forms.Application]::EnableVisualStyles()
+
+    $form = New-Object Windows.Forms.Form
+    $form.Text = 'Bigstep PC Setup - choose software'
+    $form.Size = New-Object Drawing.Size(420, 520)
+    $form.StartPosition = 'CenterScreen'
+    $form.FormBorderStyle = 'FixedDialog'
+    $form.MaximizeBox = $false
+    $form.TopMost = $true
+
+    $label = New-Object Windows.Forms.Label
+    $label.Text = "Tick the software to install on this PC, then click Install."
+    $label.Location = New-Object Drawing.Point(12, 12)
+    $label.Size = New-Object Drawing.Size(380, 20)
+    $form.Controls.Add($label)
+
+    $list = New-Object Windows.Forms.CheckedListBox
+    $list.Location = New-Object Drawing.Point(12, 38)
+    $list.Size = New-Object Drawing.Size(380, 370)
+    $list.CheckOnClick = $true
+    $list.Font = New-Object Drawing.Font('Segoe UI', 10)
+    foreach ($app in $apps) { [void]$list.Items.Add($app.name, [bool]$app.enabled) }
+    $form.Controls.Add($list)
+
+    $btnAll = New-Object Windows.Forms.Button
+    $btnAll.Text = 'Select all'
+    $btnAll.Location = New-Object Drawing.Point(12, 420)
+    $btnAll.Add_Click({ for ($i = 0; $i -lt $list.Items.Count; $i++) { $list.SetItemChecked($i, $true) } })
+    $form.Controls.Add($btnAll)
+
+    $btnNone = New-Object Windows.Forms.Button
+    $btnNone.Text = 'Select none'
+    $btnNone.Location = New-Object Drawing.Point(95, 420)
+    $btnNone.Add_Click({ for ($i = 0; $i -lt $list.Items.Count; $i++) { $list.SetItemChecked($i, $false) } })
+    $form.Controls.Add($btnNone)
+
+    $btnOk = New-Object Windows.Forms.Button
+    $btnOk.Text = 'Install'
+    $btnOk.Location = New-Object Drawing.Point(236, 420)
+    $btnOk.DialogResult = 'OK'
+    $form.AcceptButton = $btnOk
+    $form.Controls.Add($btnOk)
+
+    $btnCancel = New-Object Windows.Forms.Button
+    $btnCancel.Text = 'Cancel'
+    $btnCancel.Location = New-Object Drawing.Point(317, 420)
+    $btnCancel.DialogResult = 'Cancel'
+    $form.CancelButton = $btnCancel
+    $form.Controls.Add($btnCancel)
+
+    if ($form.ShowDialog() -ne 'OK') { return $null }
+    $chosen = @($list.CheckedItems)
+    return @($apps | Where-Object { $chosen -contains $_.name })
+}
+
+function Select-AppsConsole($apps) {
+    # Fallback text menu if the window can't be shown
+    $picked = @{}
+    foreach ($app in $apps) { $picked[$app.name] = [bool]$app.enabled }
+    while ($true) {
+        Write-Host "`nChoose software to install (number = tick/untick, A = all, N = none, Enter = install, Q = quit):" -ForegroundColor Cyan
+        for ($i = 0; $i -lt $apps.Count; $i++) {
+            $mark = if ($picked[$apps[$i].name]) { '[X]' } else { '[ ]' }
+            Write-Host ("  {0,2}. {1} {2}" -f ($i + 1), $mark, $apps[$i].name)
+        }
+        $in = (Read-Host 'Your choice').Trim()
+        if ($in -eq '')  { break }
+        if ($in -eq 'Q') { return $null }
+        if ($in -eq 'A') { $apps | ForEach-Object { $picked[$_.name] = $true };  continue }
+        if ($in -eq 'N') { $apps | ForEach-Object { $picked[$_.name] = $false }; continue }
+        foreach ($n in ($in -split '[ ,]+')) {
+            if ($n -match '^\d+$' -and [int]$n -ge 1 -and [int]$n -le $apps.Count) {
+                $name = $apps[[int]$n - 1].name
+                $picked[$name] = -not $picked[$name]
+            }
+        }
+    }
+    return @($apps | Where-Object { $picked[$_.name] })
+}
+
+$apps = @($apps | ForEach-Object { $_ })   # flatten (PS 5.1 ConvertFrom-Json quirk)
+try   { $selected = Select-AppsWindow $apps }
+catch { Write-Host 'Selection window unavailable - using text menu.' -ForegroundColor Yellow
+        $selected = Select-AppsConsole $apps }
+
+if (-not $selected -or $selected.Count -eq 0) {
+    Write-Host 'Nothing selected - exiting.' -ForegroundColor Yellow
+    Stop-Transcript | Out-Null
+    Read-Host 'Press Enter to close'
+    return
+}
+Write-Host "Selected: $(($selected | ForEach-Object name) -join ', ')" -ForegroundColor Green
+
 # ---- 3. Make sure winget is available --------------------------------
 function Get-Winget {
     $cmd = Get-Command winget.exe -ErrorAction SilentlyContinue
@@ -144,7 +241,7 @@ function Add-Result($name, $ok, $via, $sw) {
 $results    = @()
 $background = @()
 $total      = [Diagnostics.Stopwatch]::StartNew()
-$enabled    = @($apps | Where-Object { $_.enabled })
+$enabled    = @($selected)
 $i = 0
 foreach ($app in $enabled) {
     $i++

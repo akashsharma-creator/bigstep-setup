@@ -15,7 +15,9 @@ repository and installs all the standard Bigstep software automatically.
 
 ### What gets installed
 
-| Software               | Installed by default |
+You can change this list each time in the selection window (see step 5 below).
+
+| Software               | Ticked by default |
 |------------------------|:--------------------:|
 | Google Chrome          | ✅ |
 | Mozilla Firefox        | ✅ |
@@ -48,7 +50,17 @@ repository and installs all the standard Bigstep software automatically.
    ```
 
 4. A **"Do you want to allow this app to make changes?"** window appears. Click **Yes**.
-5. A new blue PowerShell window opens and installs the software one by one.
+5. A **"Bigstep PC Setup – choose software"** window opens, listing every app:
+   - The standard apps are **already ticked**.
+   - **Untick** anything this PC doesn't need, and **tick** any extras (VLC, Zoom, Slack…).
+   - **Select all** / **Select none** tick or untick everything at once.
+   - Click **Install** to continue, or **Cancel** to exit without installing anything.
+
+   > If the window can't open, a numbered list appears in PowerShell instead.
+   > Type a number (or several, e.g. `2 5 9`) and press Enter to tick/untick,
+   > `A` = all, `N` = none, then press **Enter** on an empty line to install.
+
+   A new blue PowerShell window then installs the software you picked, one by one.
    **Don't close it.** Some installers (for example Microsoft 365) may open
    their own window. Let them finish.
 6. At the end you'll see a **SUMMARY** table showing each app as `OK` or `FAILED`.
@@ -92,7 +104,7 @@ All Windows apps are listed in [`windows/apps.json`](windows/apps.json). Each ap
 | Field       | What it means |
 |-------------|---------------|
 | `name`      | Name shown during installation. |
-| `enabled`   | `true` = install it, `false` = skip it. |
+| `enabled`   | `true` = ticked by default in the selection window, `false` = shown but unticked. |
 | `wingetId`  | ID used by **winget** (Windows' built-in installer) to download the latest version. To find an ID, run `winget search <app name>` on any Windows PC. |
 | `installer` | *(optional)* An installer file in `windows/installers/`, used if winget isn't available or fails. |
 | `args`      | *(optional)* Silent-install options for that installer file. |
