@@ -21,7 +21,6 @@ $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $RawUrl = "https://raw.githubusercontent.com/$GitHubUser/$RepoName/$Branch/windows/setup.ps1"
-$ZipUrl = "https://github.com/$GitHubUser/$RepoName/archive/refs/heads/$Branch.zip"
 
 # ---- 1. Re-launch as Administrator if needed -------------------------
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
@@ -43,21 +42,33 @@ New-Item -ItemType Directory -Force $LogDir | Out-Null
 Start-Transcript -Path "$LogDir\setup-$(Get-Date -Format yyyyMMdd-HHmmss).log" | Out-Null
 
 # ---- 2. Get the repo files (apps.json + installers) ------------------
+#      Only apps.json is fetched up front; an installer file is downloaded
+#      only if that app actually needs its bundled fallback.
+$ProgressPreference = 'SilentlyContinue'       # makes Invoke-WebRequest much faster
+$BaseUrl = "https://raw.githubusercontent.com/$GitHubUser/$RepoName/$Branch/windows"
+
 if ($PSScriptRoot -and (Test-Path (Join-Path $PSScriptRoot 'apps.json'))) {
-    $Root = $PSScriptRoot                      # running from local folder / pendrive
+    $IsLocal      = $true                      # running from local folder / pendrive
+    $InstallerDir = Join-Path $PSScriptRoot 'installers'
+    $apps = Get-Content (Join-Path $PSScriptRoot 'apps.json') -Raw | ConvertFrom-Json
 } else {
-    Write-Host "Downloading setup files from GitHub ($GitHubUser/$RepoName)..." -ForegroundColor Cyan
-    $zip  = Join-Path $env:TEMP "$RepoName.zip"
-    $dest = Join-Path $env:TEMP "$RepoName-files"
-    if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
-    $ProgressPreference = 'SilentlyContinue'   # makes Invoke-WebRequest much faster
-    Invoke-WebRequest -Uri $ZipUrl -OutFile $zip -UseBasicParsing
-    Expand-Archive -Path $zip -DestinationPath $dest -Force
-    $Root = Join-Path $dest "$RepoName-$Branch\windows"
+    $IsLocal      = $false
+    $InstallerDir = Join-Path $env:TEMP "$RepoName-installers"
+    New-Item -ItemType Directory -Force $InstallerDir | Out-Null
+    Write-Host "Fetching app list from GitHub ($GitHubUser/$RepoName)..." -ForegroundColor Cyan
+    $apps = Invoke-RestMethod -Uri "$BaseUrl/apps.json" -UseBasicParsing
 }
 
-$InstallerDir = Join-Path $Root 'installers'
-$apps = Get-Content (Join-Path $Root 'apps.json') -Raw | ConvertFrom-Json
+function Get-InstallerFile($name) {
+    $file = Join-Path $InstallerDir $name
+    if (-not (Test-Path $file) -and -not $IsLocal) {
+        Write-Host "  Downloading $name from GitHub..."
+        try { Invoke-WebRequest -Uri "$BaseUrl/installers/$([uri]::EscapeDataString($name))" -OutFile $file -UseBasicParsing }
+        catch { Write-Host "  Download failed: $_" -ForegroundColor Red }
+    }
+    if (Test-Path $file) { return $file }
+    return $null
+}
 
 # ---- 3. Make sure winget is available --------------------------------
 function Get-Winget {
@@ -76,7 +87,6 @@ if (-not $winget) {
 }
 if ($winget) {
     Write-Host "Using winget: $winget" -ForegroundColor Green
-    & $winget source update --disable-interactivity | Out-Null
 } else {
     Write-Host 'winget unavailable - will use bundled installers only.' -ForegroundColor Yellow
 }
@@ -87,14 +97,15 @@ $wingetOk = @(0, -1978335189, -1978335135)
 function Install-WithWinget($app) {
     if (-not $winget -or -not $app.wingetId) { return $false }
     Write-Host "  winget install $($app.wingetId)"
-    & $winget install --id $app.wingetId -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity | Out-Host
+    # --source winget skips the slow Microsoft Store source
+    & $winget install --id $app.wingetId -e --source winget --silent --accept-source-agreements --accept-package-agreements --disable-interactivity | Out-Host
     return ($wingetOk -contains $LASTEXITCODE)
 }
 
 function Install-WithBundled($app) {
     if (-not $app.installer) { return $false }
-    $file = Join-Path $InstallerDir $app.installer
-    if (-not (Test-Path $file)) { Write-Host "  Bundled installer missing: $file" -ForegroundColor Red; return $false }
+    $file = Get-InstallerFile $app.installer
+    if (-not $file) { Write-Host "  Bundled installer missing: $($app.installer)" -ForegroundColor Red; return $false }
     Unblock-File $file -ErrorAction SilentlyContinue
 
     if ($app.portable) {
@@ -109,24 +120,65 @@ function Install-WithBundled($app) {
     }
 
     Write-Host "  Running bundled $($app.installer) $($app.args)"
-    $p = if ($app.args) { Start-Process -FilePath $file -ArgumentList $app.args -Wait -PassThru }
-         else           { Start-Process -FilePath $file -Wait -PassThru }
+    $p = if ($app.args) { Start-Process -FilePath $file -ArgumentList $app.args -PassThru }
+         else           { Start-Process -FilePath $file -PassThru }
+
+    # "background": true = don't wait; it installs alongside the other apps
+    # and is checked at the end (used for the big Microsoft 365 download).
+    if ($app.background) { return $p }
+
+    $p.WaitForExit()
     return (@(0, 3010) -contains $p.ExitCode)   # 3010 = success, reboot required
 }
 
+function Add-Result($name, $ok, $via, $sw) {
+    $script:results += [pscustomobject]@{
+        App     = $name
+        Status  = $(if ($ok) { 'OK' } else { 'FAILED' })
+        Via     = $(if ($ok) { $via } else { '-' })
+        Minutes = [math]::Round($sw.Elapsed.TotalMinutes, 1)
+    }
+}
+
 # ---- 4. Install everything -------------------------------------------
-$results = @()
-foreach ($app in $apps) {
-    if (-not $app.enabled) { continue }
-    Write-Host "`n=== $($app.name) ===" -ForegroundColor Cyan
+$results    = @()
+$background = @()
+$total      = [Diagnostics.Stopwatch]::StartNew()
+$enabled    = @($apps | Where-Object { $_.enabled })
+$i = 0
+foreach ($app in $enabled) {
+    $i++
+    Write-Host "`n=== [$i/$($enabled.Count)] $($app.name) ===" -ForegroundColor Cyan
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+
+    if ($app.background) {
+        $p = Install-WithBundled $app
+        if ($p -is [Diagnostics.Process]) {
+            Write-Host '  Started in background - continuing with the other apps.' -ForegroundColor Yellow
+            $background += [pscustomobject]@{ App = $app; Process = $p; Timer = $sw }
+        } else {
+            Add-Result $app.name $false '-' $sw
+        }
+        continue
+    }
+
     $ok = Install-WithWinget $app
     $via = 'winget'
     if (-not $ok) { $ok = Install-WithBundled $app; $via = 'bundled' }
-    $results += [pscustomobject]@{ App = $app.name; Status = $(if ($ok) { 'OK' } else { 'FAILED' }); Via = $(if ($ok) { $via } else { '-' }) }
+    Add-Result $app.name $ok $via $sw
+    Write-Host "  $(if ($ok) {'Done'} else {'FAILED'}) in $([math]::Round($sw.Elapsed.TotalMinutes,1)) min"
+}
+
+foreach ($b in $background) {
+    if (-not $b.Process.HasExited) {
+        Write-Host "`nWaiting for $($b.App.name) to finish (large download, can take a while)..." -ForegroundColor Yellow
+    }
+    $b.Process.WaitForExit()
+    Add-Result $b.App.name (@(0, 3010) -contains $b.Process.ExitCode) 'bundled' $b.Timer
 }
 
 # ---- 5. Summary -------------------------------------------------------
-Write-Host "`n================ SUMMARY ================" -ForegroundColor Cyan
+Write-Host "`n================ SUMMARY ($([math]::Round($total.Elapsed.TotalMinutes,1)) min total) ================" -ForegroundColor Cyan
 $results | Format-Table -AutoSize | Out-String | Write-Host
 Write-Host "Log saved in $LogDir" -ForegroundColor Gray
 Stop-Transcript | Out-Null

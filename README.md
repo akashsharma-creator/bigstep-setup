@@ -31,7 +31,9 @@ repository and installs all the standard Bigstep software automatically.
 - The PC must be connected to the **internet**.
 - You must be able to approve an **Administrator** prompt on the PC.
 - Setup takes about **10–30 minutes**, depending on internet speed. Keep the PC
-  switched on and plugged in.
+  switched on and plugged in. Most of that time is **Microsoft 365** (a 2–3 GB
+  download). It installs in the background while the other apps install, and the
+  script waits for it at the end. The summary shows how many minutes each app took.
 
 ### Method 1 – One command (recommended)
 
@@ -94,6 +96,7 @@ All Windows apps are listed in [`windows/apps.json`](windows/apps.json). Each ap
 | `wingetId`  | ID used by **winget** (Windows' built-in installer) to download the latest version. To find an ID, run `winget search <app name>` on any Windows PC. |
 | `installer` | *(optional)* An installer file in `windows/installers/`, used if winget isn't available or fails. |
 | `args`      | *(optional)* Silent-install options for that installer file. |
+| `background`| *(optional)* `true` = start this installer and carry on with the other apps without waiting. Use it for large, slow installers (Microsoft 365 uses it). |
 | `portable`  | *(optional)* `true` = the app has no installer. The file is copied to Program Files and a Start Menu shortcut is added. |
 
 **To add a new app:**

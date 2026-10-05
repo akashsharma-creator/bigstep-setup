@@ -1,10 +1,10 @@
 [
+  { "name": "Microsoft 365 (Office)","enabled": true,                                             "installer": "OfficeSetup.exe", "background": true },
   { "name": "Google Chrome",         "enabled": true,  "wingetId": "Google.Chrome",               "installer": "Ninite-Browsers.exe" },
   { "name": "Mozilla Firefox",       "enabled": true,  "wingetId": "Mozilla.Firefox" },
   { "name": "Opera",                 "enabled": true,  "wingetId": "Opera.Opera" },
   { "name": "AnyDesk",               "enabled": true,  "wingetId": "AnyDesk.AnyDesk",             "installer": "AnyDesk.exe", "args": "--install \"C:\\Program Files (x86)\\AnyDesk\" --start-with-win --create-shortcuts --create-desktop-icon --silent" },
   { "name": "Adobe Acrobat Reader",  "enabled": true,  "wingetId": "Adobe.Acrobat.Reader.64-bit", "installer": "Reader_en_install.exe", "args": "/sAll /rs" },
-  { "name": "Microsoft 365 (Office)","enabled": true,                                             "installer": "OfficeSetup.exe" },
   { "name": "WinMemoryCleaner",      "enabled": true,  "wingetId": "IgorMundstein.WinMemoryCleaner", "installer": "WinMemoryCleaner.exe", "portable": true },
 
   { "name": "ScanCircle4D",          "enabled": false,                                            "installer": "ScanCircle4D_en.exe" },
