@@ -24,7 +24,7 @@ repository and installs all the standard Bigstep software automatically.
 | Adobe Acrobat Reader   | ✅ |
 | Microsoft 365 (Office) | ✅ |
 | WinMemoryCleaner       | ✅ |
-| ScanCircle4D, Tux Paint, 7-Zip, VLC, Zoom, Slack, VS Code, Notepad++ | ❌ (optional – see [Adding or removing software](#adding-or-removing-software)) |
+| ScanCircle4D, 7-Zip, VLC, Zoom, Slack, VS Code, Notepad++ | ❌ (optional – see [Adding or removing software](#adding-or-removing-software)) |
 
 ### Before you start
 
