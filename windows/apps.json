@@ -1,0 +1,19 @@
+[
+  { "name": "Google Chrome",         "enabled": true,  "wingetId": "Google.Chrome",               "installer": "Ninite-Browsers.exe" },
+  { "name": "Mozilla Firefox",       "enabled": true,  "wingetId": "Mozilla.Firefox" },
+  { "name": "Opera",                 "enabled": true,  "wingetId": "Opera.Opera" },
+  { "name": "AnyDesk",               "enabled": true,  "wingetId": "AnyDesk.AnyDesk",             "installer": "AnyDesk.exe", "args": "--install \"C:\\Program Files (x86)\\AnyDesk\" --start-with-win --create-shortcuts --create-desktop-icon --silent" },
+  { "name": "Adobe Acrobat Reader",  "enabled": true,  "wingetId": "Adobe.Acrobat.Reader.64-bit", "installer": "Reader_en_install.exe", "args": "/sAll /rs" },
+  { "name": "Microsoft 365 (Office)","enabled": true,                                             "installer": "OfficeSetup.exe" },
+  { "name": "WinMemoryCleaner",      "enabled": true,  "wingetId": "IgorMundstein.WinMemoryCleaner", "installer": "WinMemoryCleaner.exe", "portable": true },
+
+  { "name": "ScanCircle4D",          "enabled": false,                                            "installer": "ScanCircle4D_en.exe" },
+  { "name": "Tux Paint",             "enabled": false,                                            "installer": "tuxpaint-0.9.34-windows-x86_64-installer.exe", "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" },
+
+  { "name": "7-Zip",                 "enabled": false, "wingetId": "7zip.7zip" },
+  { "name": "VLC",                   "enabled": false, "wingetId": "VideoLAN.VLC" },
+  { "name": "Zoom",                  "enabled": false, "wingetId": "Zoom.Zoom" },
+  { "name": "Slack",                 "enabled": false, "wingetId": "SlackTechnologies.Slack" },
+  { "name": "VS Code",               "enabled": false, "wingetId": "Microsoft.VisualStudioCode" },
+  { "name": "Notepad++",             "enabled": false, "wingetId": "Notepad++.Notepad++" }
+]
