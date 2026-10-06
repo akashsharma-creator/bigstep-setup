@@ -130,9 +130,25 @@ All Windows apps are listed in [`windows/apps.json`](windows/apps.json). Each ap
 
 ## macOS
 
-Everything is installed through **Homebrew** (the standard Mac package
-manager), which always downloads the latest version. The script installs
-Homebrew automatically if the Mac doesn't have it yet.
+The script **detects the Mac's chip, Intel or Apple M-series (M1/M2/M3/M4…)**,
+and downloads the **latest version for that chip** straight from each vendor's
+official website:
+
+| App | Intel Mac | M-series Mac |
+|---|---|---|
+| Zoom, Slack, VS Code | Intel version | M-series (Apple Silicon) version |
+| Microsoft 365, Chrome, Firefox, AnyDesk | Universal version (runs natively on both) | Universal version |
+| Opera, Acrobat Reader, VLC, 7-Zip | via **Homebrew** (picks the right chip) | via **Homebrew** |
+
+- If a direct download fails, the script automatically tries Homebrew instead.
+- Homebrew (the standard Mac package manager) is installed only if one of the
+  selected apps needs it.
+- On M-series Macs, **Rosetta 2** is also installed. It lets older Intel-only apps
+  run, and the script accepts Apple's Rosetta licence automatically.
+- Apps that are already installed are replaced with, or upgraded to, the latest version.
+- The installer files are **not stored on GitHub**: GitHub's 100 MB file limit is
+  too small, and Office alone is about 3 GB. The script on GitHub downloads them
+  from the vendors when it runs.
 
 ### What gets installed
 
@@ -176,15 +192,20 @@ A log of each run is saved in `~/BigstepSetup/`.
 
 ### Adding or removing Mac software
 
-Edit [`macos/apps.txt`](macos/apps.txt). Each line is:
+Edit [`macos/apps.txt`](macos/apps.txt). Each line has 6 columns separated by `|`:
 
 ```
-Name | ticked by default (1/0) | cask or formula | Homebrew name
-VLC  | 0                       | cask            | vlc
+Name | ticked (1/0) | cask/formula | Homebrew name | Intel download link | M-series download link
+Zoom | 0            | cask         | zoom          | https://zoom.us/client/latest/Zoom.pkg | https://zoom.us/client/latest/Zoom.pkg?archType=arm64
+VLC  | 0            | cask         | vlc           | -                   | -
 ```
 
-Find the Homebrew name with `brew search "app name"` or on https://formulae.brew.sh.
-Desktop apps are usually a `cask`, and command-line tools a `formula`.
+- **Download links:** use the vendor's official "always latest" link. It can
+  be a `.dmg`, `.pkg` or `.zip`, and the script works out which. Write `same` in
+  the M-series column if one universal link works on both chips, or `-` for
+  no link, in which case Homebrew is used.
+- **Homebrew name:** find it with `brew search "app name"` or on https://formulae.brew.sh.
+  Desktop apps are usually a `cask`, and command-line tools a `formula`.
 
 ## Linux (coming soon)
 

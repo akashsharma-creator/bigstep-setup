@@ -1,14 +1,24 @@
-# Bigstep Mac apps - one app per line:
-#   Name | ticked by default (1 = yes, 0 = no) | cask or formula | Homebrew name
-# Find a Homebrew name with:  brew search "app name"   (or https://formulae.brew.sh)
-Microsoft 365 (Office) | 1 | cask    | microsoft-office
-Google Chrome          | 1 | cask    | google-chrome
-Mozilla Firefox        | 1 | cask    | firefox
-Opera                  | 1 | cask    | opera
-AnyDesk                | 1 | cask    | anydesk
-Adobe Acrobat Reader   | 1 | cask    | adobe-acrobat-reader
-7-Zip                  | 0 | formula | sevenzip
-VLC                    | 0 | cask    | vlc
-Zoom                   | 0 | cask    | zoom
-Slack                  | 0 | cask    | slack
-VS Code                | 0 | cask    | visual-studio-code
+# Bigstep Mac apps - one app per line, 6 columns separated by |
+#
+#   1. Name
+#   2. Ticked by default:  1 = yes, 0 = no
+#   3. Homebrew type:      cask (apps) or formula (command-line tools)
+#   4. Homebrew name:      find it with  brew search "app name"  or https://formulae.brew.sh
+#   5. Intel Mac download: official "latest version" link, or - for none
+#   6. M-series download:  official link for Apple Silicon (M1/M2/M3/M4...),
+#                          "same" = the Intel link is universal (works on both), - for none
+#
+# The script downloads column 5 or 6 for the Mac's chip. If there is no link
+# (or the download fails) it uses Homebrew, which also picks the right chip.
+
+Microsoft 365 (Office) | 1 | cask    | microsoft-office     | https://go.microsoft.com/fwlink/?linkid=2009112 | same
+Google Chrome          | 1 | cask    | google-chrome        | https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg | same
+Mozilla Firefox        | 1 | cask    | firefox              | https://download.mozilla.org/?product=firefox-latest-ssl&os=osx&lang=en-US | same
+Opera                  | 1 | cask    | opera                | - | -
+AnyDesk                | 1 | cask    | anydesk              | https://download.anydesk.com/anydesk.dmg | same
+Adobe Acrobat Reader   | 1 | cask    | adobe-acrobat-reader | - | -
+7-Zip                  | 0 | formula | sevenzip             | - | -
+VLC                    | 0 | cask    | vlc                  | - | -
+Zoom                   | 0 | cask    | zoom                 | https://zoom.us/client/latest/Zoom.pkg | https://zoom.us/client/latest/Zoom.pkg?archType=arm64
+Slack                  | 0 | cask    | slack                | https://slack.com/ssb/download-osx | https://slack.com/ssb/download-osx-silicon
+VS Code                | 0 | cask    | visual-studio-code   | https://update.code.visualstudio.com/latest/darwin/stable | https://update.code.visualstudio.com/latest/darwin-arm64/stable
