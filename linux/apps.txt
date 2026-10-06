@@ -1,0 +1,28 @@
+# Bigstep Ubuntu apps - one app per line, 4 columns separated by |
+#
+#   1. Name
+#   2. Ticked by default:  1 = yes, 0 = no
+#   3. Intel/AMD PC (amd64) source
+#   4. ARM PC (arm64) source - "same" = same as column 3, "-" = not available for ARM
+#
+# A source is one of:
+#   deb:<url>                     official "always latest" .deb download link
+#   debrepo:<repo>/dists/<dist>/<component>#<package>
+#                                 newest .deb for this PC's chip, read from the vendor's apt repo
+#   snap:<name>                   Snap Store (auto-updates, always latest)
+#   apt:<package>[,<fallback>]    Ubuntu's own packages (first name that exists is used)
+#
+# Not on Linux: Microsoft 365 (use https://office.com in the browser),
+# Adobe Acrobat Reader (Ubuntu's built-in Document Viewer opens PDFs),
+# WinMemoryCleaner, ScanCircle4D, Notepad++.
+
+Google Chrome                   | 1 | deb:https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb | deb:https://dl.google.com/linux/direct/google-chrome-stable_current_arm64.deb
+Mozilla Firefox                 | 1 | snap:firefox | same
+Opera                           | 1 | snap:opera | -
+AnyDesk                         | 1 | debrepo:http://deb.anydesk.com/dists/all/main#anydesk | same
+LibreOffice (Office for Linux)  | 1 | apt:libreoffice | same
+7-Zip                           | 0 | apt:7zip,p7zip-full | same
+VLC                             | 0 | snap:vlc | apt:vlc
+Zoom                            | 0 | deb:https://zoom.us/client/latest/zoom_amd64.deb | -
+Slack                           | 0 | snap:slack | -
+VS Code                         | 0 | deb:https://update.code.visualstudio.com/latest/linux-deb-x64/stable | deb:https://update.code.visualstudio.com/latest/linux-deb-arm64/stable

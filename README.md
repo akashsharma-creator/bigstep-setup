@@ -8,14 +8,14 @@ version**. Apps that are already installed get upgraded.
 
 **https://akashsharma-creator.github.io/bigstep-setup/**
 
-Open this link on the new computer. It detects whether it's Windows or a Mac
+Open this link on the new computer. It detects whether it's Windows, a Mac or Ubuntu
 and shows the right command, with a **Copy** button and step-by-step instructions.
 
 | Operating system | Status         | Go to                         |
 |------------------|----------------|-------------------------------|
 | Windows 10 / 11  | ✅ Ready        | [Windows](#windows)           |
 | macOS            | ✅ Ready        | [macOS](#macos)               |
-| Linux (Ubuntu)   | 🚧 Coming soon  | [Linux](#linux-coming-soon)   |
+| Linux (Ubuntu)   | ✅ Ready        | [Linux](#linux-ubuntu)        |
 
 ---
 
@@ -207,15 +207,68 @@ VLC  | 0            | cask         | vlc           | -                   | -
 - **Homebrew name:** find it with `brew search "app name"` or on https://formulae.brew.sh.
   Desktop apps are usually a `cask`, and command-line tools a `formula`.
 
-## Linux (coming soon)
+## Linux (Ubuntu)
 
-This will work the same way: one command in **Terminal**, using `linux/setup.sh`
-(installed through apt / snap).
+Works on **Ubuntu 22.04 / 24.04** and other Ubuntu-based systems (Linux Mint,
+Debian). The script **detects the PC's chip, Intel/AMD (`amd64`) or ARM
+(`arm64`)**, and installs the **latest version for that chip**.
 
-```bash
-# Not available yet
-curl -fsSL https://raw.githubusercontent.com/akashsharma-creator/bigstep-setup/main/linux/setup.sh | sudo bash
+### What gets installed
+
+| Software | Ticked by default | Intel/AMD PC | ARM PC | Comes from |
+|---|:---:|:---:|:---:|---|
+| Google Chrome | ✅ | ✅ | ✅ | Google's official `.deb` |
+| Mozilla Firefox | ✅ | ✅ | ✅ | Snap Store |
+| Opera | ✅ | ✅ | ❌ | Snap Store |
+| AnyDesk | ✅ | ✅ | ✅ | AnyDesk's official `.deb` (newest version) |
+| LibreOffice | ✅ | ✅ | ✅ | Ubuntu (apt) |
+| 7-Zip | ❌ | ✅ | ✅ | Ubuntu (apt) |
+| VLC | ❌ | ✅ | ✅ | Snap (Intel/AMD), apt (ARM) |
+| Zoom | ❌ | ✅ | ❌ | Zoom's official `.deb` |
+| Slack | ❌ | ✅ | ❌ | Snap Store |
+| VS Code | ❌ | ✅ | ✅ | Microsoft's official `.deb` |
+
+- **Not available on Linux:** Microsoft 365 (use https://office.com in the
+  browser; LibreOffice opens Word/Excel/PowerPoint files), Adobe Acrobat Reader
+  (Ubuntu's built-in Document Viewer opens PDFs), WinMemoryCleaner, ScanCircle4D
+  and Notepad++.
+- Apps that aren't made for this PC's chip are shown as *"not available for
+  arm64"* and marked **SKIPPED** in the summary.
+- Chrome, VS Code and AnyDesk keep updating through Ubuntu's normal **Software
+  Updater**, and Snap apps update themselves.
+
+### Steps
+
+1. Press **Ctrl + Alt + T** to open **Terminal**.
+2. Paste this command (**Ctrl + Shift + V**) and press **Enter**:
+
+   ```bash
+   bash -c "$(wget -qO- https://raw.githubusercontent.com/akashsharma-creator/bigstep-setup/main/linux/setup.sh)"
+   ```
+
+3. A **Bigstep PC Setup** window lists every app, with the standard ones already
+   ticked. Tick or untick apps, then click **Install**.
+   - Without a desktop, for example over SSH, a checklist appears inside the Terminal
+     instead: arrow keys move, **Space** ticks, **Enter** installs.
+4. Type your **password** when asked and press **Enter**. Nothing appears while
+   you type, which is normal.
+5. Wait for the **SUMMARY**, then restart the PC.
+
+A log of each run is saved in `~/BigstepSetup/`.
+
+### Adding or removing Linux software
+
+Edit [`linux/apps.txt`](linux/apps.txt). Each line has 4 columns:
+
 ```
+Name | ticked (1/0) | Intel/AMD source | ARM source
+Zoom | 0            | deb:https://zoom.us/client/latest/zoom_amd64.deb | -
+VLC  | 0            | snap:vlc         | apt:vlc
+```
+
+A source is `deb:<official latest .deb link>`, `snap:<name>`, `apt:<package>`, or
+`debrepo:<vendor apt repo>#<package>`. In the ARM column, `same` means the same
+source as the Intel/AMD column, and `-` means not available for ARM.
 
 ---
 
@@ -234,7 +287,9 @@ bigstep-setup/
 ├── macos/
 │   ├── setup.sh       ← main Mac setup script (Homebrew)
 │   └── apps.txt       ← list of Mac apps to install
-└── linux/             ← (coming soon)
+└── linux/
+    ├── setup.sh       ← main Ubuntu setup script
+    └── apps.txt       ← list of Ubuntu apps to install
 ```
 
 ## Rules for this repository

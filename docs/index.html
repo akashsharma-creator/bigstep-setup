@@ -88,13 +88,22 @@
 
   <section class="card" data-panel="linux" hidden>
     <span class="detected" hidden>✓ Detected: this is a Linux PC</span>
-    <h2>Linux</h2>
-    <p>Linux setup isn't available yet. Please contact IT.</p>
+    <h2>Ubuntu Linux</h2>
+    <ol>
+      <li>Press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd> to open <b>Terminal</b>.</li>
+      <li>Click <b>Copy</b>, paste into Terminal with <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>, and press <kbd>Enter</kbd>:
+        <div class="cmd"><pre>bash -c "$(wget -qO- https://raw.githubusercontent.com/akashsharma-creator/bigstep-setup/main/linux/setup.sh)"</pre><button class="copy">Copy</button></div>
+      </li>
+      <li>In the <b>Bigstep PC Setup</b> window, tick the apps you want and click <b>Install</b>.</li>
+      <li>Type your <b>password</b> when asked (nothing appears while you type — that's normal) and press <kbd>Enter</kbd>.</li>
+      <li>Wait for the <b>SUMMARY</b>, then restart the PC.</li>
+    </ol>
+    <p class="note">The script detects whether this PC has an <b>Intel/AMD</b> or <b>ARM</b> chip and installs the latest version of each app for that chip. Microsoft 365 isn't available on Linux — use office.com in the browser. A log is saved in <code>~/BigstepSetup/</code>.</p>
   </section>
 
   <section class="card" data-panel="phone" hidden>
     <h2>Open this page on the computer you're setting up</h2>
-    <p>This setup runs on Windows PCs and Macs, not phones or tablets. Open this same link on the new computer, or pick its system above to see the steps.</p>
+    <p>This setup runs on Windows PCs, Macs and Ubuntu Linux, not phones or tablets. Open this same link on the new computer, or pick its system above to see the steps.</p>
   </section>
 
   <footer>
